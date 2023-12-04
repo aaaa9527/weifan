@@ -1,0 +1,202 @@
+// ******************************************************************************************
+// **************************VEONEER ELECTRONICS document************************************
+// ******************************************************************************************
+// Result Test: 
+// ******************************************************************************************
+// Test case ID: 
+// ******************************************************************************************
+// Equipment: Test PC, ACCT V3.0, ARIA 3.6
+// ******************************************************************************************
+// Requirement under test:
+// ******************************************************************************************
+// Author: 
+// ******************************************************************************************
+// Full Automation: Yes
+	
+// *******************************************************
+               // External Function
+// *******************************************************
+CALL(AA_CHERY_T26_2S_HeadDefine.ts);
+CALL(BB_DTC_Common_Define.ts);
+// MessageBox.Show(1);
+// *******************************************************
+               // Test Information
+// *******************************************************
+
+CommonInformation();
+// MessageBox.Show(2);	
+// *******************************************************
+               // Test Log Variables Path Define
+// *******************************************************
+// G_Power_Type = "External";
+// *******************************************************
+               // Define/Re-Define parameters
+// *******************************************************
+
+// *******************************************************
+               // Test Steps
+// *******************************************************
+
+if(CheckTestEnvironment()) 
+{
+	// MessageBox.Show(3);
+	CAN.SetDiagnosticAdressingMode(G_CAN_Channel,G_External_Phy_ID,G_External_Res_ID);
+	Thread.Sleep(6000);
+	
+	CommentStep("check Low Diagnostic Voltage DTC");
+	// -----------------------------TEST STEP------------------------------//  
+	var Store_Path1 = G_PathArray[3] +  "Low_Diag_VOL0" + "_qualify.log";
+	  CAN.StartLoggingToFile(Store_Path1,[faultFlag,G_External_Phy_ID,G_External_Res_ID]); 
+	  Thread.Sleep(200);      
+      SetVoltage(7);	
+	  // MessageBox.Show(1);
+	  CAN.SendFrame(2,faultFlag,8,[0x11,0x11,0x11,0x11,0x00,0x00,0x00,0x00]);
+	  for(var i=0; i<200; i++)
+	  {
+		CAN.SendDiagByValues("0x19 0x02 0x08");
+		Thread.Sleep(20);
+	  }
+	  CAN.StopLogging();
+	  Thread.Sleep(200);	  
+      CalculateQualifyTime(Store_Path1, 3000, G_Voltage_Abnormal["Low_Diag_VOL"][0], "8B", 300);	  
+	  var ret = ActualResults();
+	  CompareResultsDefine(ret,"ON",G_Voltage_Abnormal["Low_Diag_VOL"][0],G_Voltage_Abnormal["Low_Diag_VOL"][1]+"-ACTIVE"); 
+		
+	  var Store_Path2 = G_PathArray[3] +  "Low_Diag_VOL0" + "_disqualify.log";
+	  CAN.StartLoggingToFile(Store_Path2,[faultFlag,G_External_Phy_ID,G_External_Res_ID]);
+      Thread.Sleep(200);	  
+      SetVoltage(9.3); //T1DP-29
+	  CAN.SendFrame(2,faultFlag,8,[0x00,0x00,0x00,0x00,0x11,0x11,0x11,0x11]);
+      for(var i=0; i<200; i++)
+	  {
+		CAN.SendDiagByValues("0x19 0x02 0x08");
+		Thread.Sleep(20);
+	  }	
+      CAN.StopLogging();
+	  Thread.Sleep(200);	  
+	  CalculateDisqualifyTime(Store_Path2, 3000, G_Voltage_Abnormal["Low_Diag_VOL"][0], "0A", 300);
+	  var ret = ActualResults();
+	  CompareResultsDefine(ret,"OFF",G_Voltage_Abnormal["Low_Diag_VOL"][0],G_Voltage_Abnormal["Low_Diag_VOL"][1]+"-HISTORIC"); 
+	
+
+	  SetVoltage(12);
+	  Thread.Sleep(8000);
+	  // var Store_Path4 = G_PathArray[3] +  "Low_Diag_VOL0" + "_disqualify_2.log";
+	  // CAN.StartLoggingToFile(Store_Path4,[faultFlag,G_External_Phy_ID,G_External_Res_ID]);
+      // Thread.Sleep(200);	  
+      // SetVoltage(12);
+	  // CAN.SendFrame(2,faultFlag,8,[0x00,0x00,0x00,0x00,0x11,0x11,0x11,0x11]);
+      // for(var i=0; i<200; i++)
+	  // {
+		// CAN.SendDiagByValues("0x19 0x02 0x08");
+		// Thread.Sleep(20);
+	  // }	
+      // CAN.StopLogging();
+	  // Thread.Sleep(200);	  
+	  // CalculateDisqualifyTime(Store_Path4, 3000, G_Voltage_Abnormal["Low_Diag_VOL"][0], "0A", 300);
+	  // var ret = ActualResults();
+	  // CompareResultsDefine(ret,"OFF",G_Voltage_Abnormal["Low_Diag_VOL"][0],G_Voltage_Abnormal["Low_Diag_VOL"][1]+"-HISTORIC"); 
+		
+	  RESULT.InterpretEqualResult("clear DTC",["0000",CAN.SendDiagByValues("0x14 0xFF 0xFF 0xFF")[1]],"0x54");
+	  Thread.Sleep(2000);
+	  var ret = ActualResults();
+	  CompareResultsDefine(ret,"OFF","NONE","NONE"); 	
+	  
+	CommentStep("check High Diagnostic Voltage DTC");
+	// -----------------------------TEST STEP------------------------------//  
+	var Store_Path3 = G_PathArray[3] +  "High_Diag_VOL" + "_qualify.log";
+	  CAN.StartLoggingToFile(Store_Path3,[faultFlag,G_External_Phy_ID,G_External_Res_ID]); 
+	  Thread.Sleep(200);      
+      SetVoltage(19.7);	
+	  CAN.SendFrame(2,faultFlag,8,[0x11,0x11,0x11,0x11,0x00,0x00,0x00,0x00]);
+	  for(var i=0; i<200; i++)
+	  {
+		CAN.SendDiagByValues("0x19 0x02 0x08");
+		Thread.Sleep(20);
+	  }
+	  CAN.StopLogging();
+	  Thread.Sleep(200);	  
+      CalculateQualifyTime(Store_Path3, 3000, G_Voltage_Abnormal["High_Diag_VOL"][0], "8B", 300);	  
+	  var ret = ActualResults();
+	  CompareResultsDefine(ret,"ON",G_Voltage_Abnormal["High_Diag_VOL"][0],G_Voltage_Abnormal["High_Diag_VOL"][1]+"-ACTIVE"); 
+		
+		
+	  var Store_Path4 = G_PathArray[3] +  "High_Diag_VOL" + "_disqualify.log";
+	  CAN.StartLoggingToFile(Store_Path4,[faultFlag,G_External_Phy_ID,G_External_Res_ID]);
+      Thread.Sleep(200);	  
+      SetVoltage(16.01);
+	  CAN.SendFrame(2,faultFlag,8,[0x00,0x00,0x00,0x00,0x11,0x11,0x11,0x11]);
+      for(var i=0; i<200; i++)
+	  {
+		CAN.SendDiagByValues("0x19 0x02 0x08");
+		Thread.Sleep(20);
+	  }	
+      CAN.StopLogging();
+	  Thread.Sleep(200);	  
+	  CalculateDisqualifyTime(Store_Path4, 3000, G_Voltage_Abnormal["High_Diag_VOL"][0], "0A", 300);
+	  var ret = ActualResults();
+	  CompareResultsDefine(ret,"OFF",G_Voltage_Abnormal["High_Diag_VOL"][0],G_Voltage_Abnormal["High_Diag_VOL"][1]+"-HISTORIC"); 
+		
+	  RESULT.InterpretEqualResult("clear DTC",["0000",CAN.SendDiagByValues("0x14 0xFF 0xFF 0xFF")[1]],"0x54");
+	  Thread.Sleep(2000);
+	  var ret = ActualResults();
+	  CompareResultsDefine(ret,"OFF","NONE","NONE"); 
+
+	  
+	CommentStep("check Self Healing Cycles");
+	// -----------------------------TEST STEP------------------------------//
+	  SetVoltage(7);	
+	  Thread.Sleep(5000);
+	  SetVoltage(12);	
+	  Thread.Sleep(5000);
+		
+	  SetVoltage(19.7);	
+	  Thread.Sleep(5000);
+	  SetVoltage(12);	
+	  Thread.Sleep(5000);
+	  var ret = ActualResults();
+	  CompareResultsDefine(ret,"OFF",G_Voltage_Abnormal["High_Diag_VOL"][0]+","+G_Voltage_Abnormal["Low_Diag_VOL"][0],G_Voltage_Abnormal["High_Diag_VOL"][1]+"-HISTORIC"+","+G_Voltage_Abnormal["Low_Diag_VOL"][1]+"-HISTORIC"); 
+		
+	  for(var i=0; i<49;i++)
+	 {
+		PowerOff();
+		Thread.Sleep(6000);
+		PowerOn();
+		Thread.Sleep(8000);
+	 }
+
+	  var ret = ActualResults();
+	  CompareResultsDefine(ret,"OFF",G_Voltage_Abnormal["High_Diag_VOL"][0]+","+G_Voltage_Abnormal["Low_Diag_VOL"][0],G_Voltage_Abnormal["High_Diag_VOL"][1]+"-HISTORIC"+","+G_Voltage_Abnormal["Low_Diag_VOL"][1]+"-HISTORIC"); 
+
+
+	  PowerOff();
+	  Thread.Sleep(6000);
+	  PowerOn();
+	  Thread.Sleep(8000);
+
+	RESULT.InterpretEqualResult("clear DTC",["0000",CAN.SendDiagByValues("0x14 0xFF 0xFF 0xFF")[1]],"0x54");
+	Thread.Sleep(2000);
+	var ret = ActualResults();
+	CompareResultsDefine(ret,"OFF","NONE","NONE");
+		
+	  var ret = ActualResults();
+	  CompareResultsDefine(ret,"OFF","NONE","NONE"); 
+	
+	
+}	
+else
+{
+	RESULT.InterpretEqualResult("Check Test Bench condition: ",["0000","Not Normal"],"Normal");
+}
+	
+// *******************************************************
+                   // Re-Initialize
+// *******************************************************
+
+ReInitialize();
+	
+// *******************************************************
+                   // Extract Result
+// *******************************************************
+var tst : TestStatus  = ExtractTestStatus(RESULT.ResultName);
+RESULT.TestVerdict(tst);
